@@ -14,7 +14,7 @@ def main():
     print(f"Request received: {request}")
 
 
-    http_response = 'HTTP/1.1 200 OK \r\n\r\n'
+    http_response = 'HTTP/1.1 200 OK\r\n\r\n'
 
     client_socket.sendall(http_response.encode('utf-8'))
 
