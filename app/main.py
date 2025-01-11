@@ -22,7 +22,7 @@ def parse_request (request):
     index += 1 
     body   = "\r\n".join(lines[index:])
 
-    return path, headers, body
+    return method, path, body
 
 def read_file (path):
 
@@ -38,6 +38,17 @@ def read_file (path):
     except Exception as e:
 
         return f'{e}', 500
+    
+def handle_post (path, message):
+
+    try:
+
+        with open (path, 'w') as file:
+            file.write(message)
+            return 'File created successfully', 201
+    except Exception as e:
+        return f'{e}', 500
+
 
 def send_response (client_socket, status_code, content):
 
@@ -93,13 +104,21 @@ def main():
 
         print (f'Request received:\n{request}')
 
-        path = parse_request (request)[0]
+        method, path, body = parse_request (request)
         
         path = path.removeprefix ("/")
 
-        file_content, status_code = read_file (path)
+        if method == 'GET':
+        
+            content, status_code = read_file (path)
+            send_response (client_socket, status_code, content.encode() if isinstance(content, str) else content)
 
-        send_response (client_socket, status_code,  file_content)
+        elif method == 'POST':
+            content, status_code = handle_post (path, body)
+            send_response (client_socket, status_code, content.encode() if isinstance(content, str) else content)
+
+        else:
+            send_response (client_socket, 405, 'Method not found'.encode())
 
 
 if __name__ == "__main__":
